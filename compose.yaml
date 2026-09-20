@@ -1,0 +1,52 @@
+# ~/secrets/compose/dockge.yaml
+services:
+    dockge:
+        image: louislam/dockge:1
+        container_name: dockge
+        restart: unless-stopped
+        ports:
+            - "5001:5001"
+        volumes:
+            - type: bind
+              source: /var/run/docker.sock
+              target: /var/run/docker.sock
+            - type: volume
+              source: dockge
+              target: /app/data
+              volume:
+                  subpath: dockge-data
+            - type: volume
+              source: dockge
+              target: ${VOLUMES_DIR}/dockge
+        environment:
+            - DOCKGE_STACKS_DIR=${VOLUMES_DIR}/dockge
+        depends_on:
+            - portainer
+    # ~/secrets/compose/portainer.yaml
+    portainer:
+        image: portainer/portainer-ce:lts
+        container_name: portainer
+        restart: unless-stopped
+        ports:
+            - "9443:9443"
+        volumes:
+            - type: bind
+              source: /var/run/docker.sock
+              target: /var/run/docker.sock
+            - type: volume
+              source: portainer_data
+              target: /data
+
+volumes:
+    portainer_data:
+        driver: local
+        driver_opts:
+            type: none
+            o: bind
+            device: ${VOLUMES_DIR}/portainer_data
+    dockge:
+        driver: local
+        driver_opts:
+            type: none
+            o: bind
+            device: ${VOLUMES_DIR}/dockge
