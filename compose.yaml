@@ -36,6 +36,40 @@ services:
             - type: volume
               source: portainer_data
               target: /data
+    # Renders homer/config.yml from config.yml.tmpl using .env values, then exits
+    homer-config:
+        image: alpine:3
+        restart: "no"
+        command:
+            - sh
+            - -c
+            - >-
+                apk add --no-cache -q gettext &&
+                envsubst '$$PORTAINER_URL $$DOCKGE_URL' < /assets/config.yml.tmpl > /assets/config.yml &&
+                chown $$(stat -c %u:%g /assets/config.yml.tmpl) /assets/config.yml
+        environment:
+            - PORTAINER_URL=${PORTAINER_URL:?set PORTAINER_URL in .env}
+            - DOCKGE_URL=${DOCKGE_URL:?set DOCKGE_URL in .env}
+        volumes:
+            - type: volume
+              source: homer
+              target: /assets
+    homer:
+        image: b4bz/homer:latest
+        container_name: homer
+        restart: unless-stopped
+        ports:
+            - "8080:8080"
+        volumes:
+            - type: volume
+              source: homer
+              target: /www/assets
+        environment:
+            # Assets are tracked in git; don't let Homer copy its defaults over them
+            - INIT_ASSETS=0
+        depends_on:
+            homer-config:
+                condition: service_completed_successfully
 
 volumes:
     portainer_data:
@@ -50,3 +84,9 @@ volumes:
             type: none
             o: bind
             device: ${VOLUMES_DIR}/dockge
+    homer:
+        driver: local
+        driver_opts:
+            type: none
+            o: bind
+            device: ${VOLUMES_DIR}/homer

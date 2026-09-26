@@ -1,1 +1,8 @@
 .env
+/volumes/*
+!/volumes/.gitkeep
+!/volumes/homer/
+# Generated from config.yml.tmpl
+/volumes/homer/config.yml
+# Windows (WSL) download metadata
+*:Zone.Identifier
