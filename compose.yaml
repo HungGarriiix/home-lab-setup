@@ -22,6 +22,12 @@ services:
             - DOCKGE_STACKS_DIR=${VOLUMES_DIR}/dockge
         depends_on:
             - portainer
+        labels:
+            - homepage.group=Management
+            - homepage.name=Dockge
+            - homepage.icon=dockge.png
+            - homepage.href=${DOCKGE_URL}
+            - homepage.description=Docker Compose stack manager
     # ~/secrets/compose/portainer.yaml
     portainer:
         image: portainer/portainer-ce:lts
@@ -36,6 +42,12 @@ services:
             - type: volume
               source: portainer_data
               target: /data
+        labels:
+            - homepage.group=Management
+            - homepage.name=Portainer
+            - homepage.icon=portainer.png
+            - homepage.href=${PORTAINER_URL}
+            - homepage.description=Docker container management
     # Renders homer/config.yml from config.yml.tmpl using .env values, then exits
     homer-config:
         image: alpine:3
@@ -70,6 +82,12 @@ services:
         depends_on:
             homer-config:
                 condition: service_completed_successfully
+        labels:
+            - homepage.group=Dashboards
+            - homepage.name=Homer
+            - homepage.icon=homer.png
+            - homepage.href=${HOMER_URL}
+            - homepage.description=Static service dashboard
     homepage:
         image: ghcr.io/gethomepage/homepage:latest
         container_name: homepage
@@ -90,7 +108,14 @@ services:
         environment:
             - HOMEPAGE_ALLOWED_HOSTS=localhost:${HOMEPAGE_PORT},127.0.0.1:${HOMEPAGE_PORT}
             - PUID=1000
-            - PGID=1000
+            # Run with the socket's group so Homepage can read it for label discovery
+            - PGID=${DOCKER_GID:?set DOCKER_GID in .env}
+        labels:
+            - homepage.group=Dashboards
+            - homepage.name=Homepage
+            - homepage.icon=homepage.png
+            - homepage.href=${HOMEPAGE_URL}
+            - homepage.description=Dashboard with Docker service discovery
 
 volumes:
     portainer_data:
