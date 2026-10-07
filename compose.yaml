@@ -5,7 +5,7 @@ services:
         container_name: dockge
         restart: unless-stopped
         ports:
-            - "5001:5001"
+            - "${DOCKGE_PORT:?set DOCKGE_PORT in .env}:5001"
         volumes:
             - type: bind
               source: /var/run/docker.sock
@@ -28,7 +28,7 @@ services:
         container_name: portainer
         restart: unless-stopped
         ports:
-            - "9443:9443"
+            - "${PORTAINER_PORT:?set PORTAINER_PORT in .env}:9443"
         volumes:
             - type: bind
               source: /var/run/docker.sock
@@ -59,7 +59,7 @@ services:
         container_name: homer
         restart: unless-stopped
         ports:
-            - "8080:8080"
+            - "${HOMER_PORT:?set HOMER_PORT in .env}:8080"
         volumes:
             - type: volume
               source: homer
@@ -70,6 +70,27 @@ services:
         depends_on:
             homer-config:
                 condition: service_completed_successfully
+    homepage:
+        image: ghcr.io/gethomepage/homepage:latest
+        container_name: homepage
+        restart: unless-stopped
+        ports:
+            - "${HOMEPAGE_PORT:?set HOMEPAGE_PORT in .env}:3000"
+        volumes:
+            - type: volume
+              source: homepage
+              target: /app/config
+              volume:
+                  subpath: config
+            # Read-only socket for Homepage's Docker integration
+            - type: bind
+              source: /var/run/docker.sock
+              target: /var/run/docker.sock
+              read_only: true
+        environment:
+            - HOMEPAGE_ALLOWED_HOSTS=localhost:${HOMEPAGE_PORT},127.0.0.1:${HOMEPAGE_PORT}
+            - PUID=1000
+            - PGID=1000
 
 volumes:
     portainer_data:
@@ -90,3 +111,9 @@ volumes:
             type: none
             o: bind
             device: ${VOLUMES_DIR}/homer
+    homepage:
+        driver: local
+        driver_opts:
+            type: none
+            o: bind
+            device: ${VOLUMES_DIR}/homepage
