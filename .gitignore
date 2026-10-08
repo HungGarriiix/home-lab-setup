@@ -3,6 +3,11 @@
 !/volumes/.gitkeep
 !/volumes/homer/
 !/volumes/traefik/
+# Homepage: track config files, not the rest of the volume or its runtime logs
+!/volumes/homepage/
+/volumes/homepage/*
+!/volumes/homepage/config/
+/volumes/homepage/config/logs/
 # Generated from config.yml.tmpl
 /volumes/homer/config.yml
 # Windows (WSL) download metadata

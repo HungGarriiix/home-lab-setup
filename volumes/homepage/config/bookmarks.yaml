@@ -1,0 +1,21 @@
+---
+# For configuration options and examples, please see:
+# https://gethomepage.dev/configs/bookmarks
+
+- Developer:
+    - Github:
+        - icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/github.png
+          abbr: GH
+          href: https://github.com/
+
+- Social:
+    - Reddit:
+        - icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/reddit.png
+          abbr: RE
+          href: https://reddit.com/
+
+- Entertainment:
+    - YouTube:
+        - icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/youtube.png
+          abbr: YT
+          href: https://youtube.com/

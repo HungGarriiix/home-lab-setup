@@ -1,0 +1,17 @@
+---
+# For configuration options and examples, please see:
+# https://gethomepage.dev/configs/info-widgets/
+
+- resources:
+    cpu: true
+    memory: true
+    disk: /
+    refresh: 10000
+
+- search:
+    provider: google
+    target: _blank
+
+# - greeting:
+#     text_size: l
+#     text: Hello Hum Skyline
