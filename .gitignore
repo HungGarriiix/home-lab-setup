@@ -2,6 +2,7 @@
 /volumes/*
 !/volumes/.gitkeep
 !/volumes/homer/
+!/volumes/traefik/
 # Generated from config.yml.tmpl
 /volumes/homer/config.yml
 # Windows (WSL) download metadata

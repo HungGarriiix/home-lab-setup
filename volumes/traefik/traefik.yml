@@ -1,0 +1,47 @@
+# Traefik static configuration, mounted read-only at /etc/traefik/traefik.yml via compose `configs:`.
+# Static config is read once at startup: restart the container after editing.
+
+api:
+  dashboard: true
+  insecure: true                   # optional: exposes dashboard on :8080 without a router (testing only)
+
+log:
+  level: INFO                        # DEBUG while troubleshooting
+
+entryPoints:
+  web:
+    address: ":80"
+    # optional: redirect all HTTP to HTTPS
+    # http:
+    #   redirections:
+    #     entryPoint:
+    #       to: websecure
+    #       scheme: https
+  # websecure:                       # optional: HTTPS
+  #   address: ":443"
+
+providers:
+  docker:
+    # Only route containers labelled traefik.enable=true
+    exposedByDefault: false
+    network: proxy
+  # Routers/middlewares/services defined in files; changes are picked up live
+  file:
+    directory: /etc/traefik/dynamic
+    watch: true
+
+# accessLog:                         # optional
+#   filePath: /var/log/traefik/access.log
+
+# certificatesResolvers:             # optional: Let's Encrypt
+#   letsencrypt:
+#     acme:
+#       email: you@example.com
+#       storage: /acme.json
+#       httpChallenge:
+#         entryPoint: web
+#       # dnsChallenge:              # use this instead for wildcards / no public port 80
+#       #   provider: cloudflare
+
+# metrics:                           # optional: Prometheus
+#   prometheus: {}

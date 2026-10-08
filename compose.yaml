@@ -1,5 +1,42 @@
-# ~/secrets/compose/dockge.yaml
 services:
+    # Reverse proxy: routes <name>.${LAB_HOSTNAME} to containers that opt in with traefik.* labels
+    traefik:
+        image: traefik:v3
+        container_name: traefik
+        restart: unless-stopped
+        ports:
+            - "${TRAEFIK_HTTP_PORT:?set TRAEFIK_HTTP_PORT in .env}:80"
+            # Insecure dashboard/API (--api.insecure); host port must not clash with HOMER_PORT
+            - "${TRAEFIK_DASHBOARD_PORT:?set TRAEFIK_DASHBOARD_PORT in .env}:8080"
+        # Static config lives in ${VOLUMES_DIR}/traefik/traefik.yml (no command: flags; Traefik reads only one static source)
+        configs:
+            - source: traefik_static
+              target: /etc/traefik/traefik.yml
+        volumes:
+            - type: bind
+              source: /var/run/docker.sock
+              target: /var/run/docker.sock
+              read_only: true
+            # File-provider dynamic config (watched, no restart needed)
+            - type: volume
+              source: traefik
+              target: /etc/traefik/dynamic
+              volume:
+                  subpath: dynamic
+        networks:
+            - proxy
+        labels:
+            # Dashboard through Traefik itself
+            - traefik.enable=true
+            - traefik.http.routers.traefik.rule=Host(`traefik.${LAB_HOSTNAME:?set LAB_HOSTNAME in .env}`)
+            - traefik.http.routers.traefik.entrypoints=web
+            - traefik.http.routers.traefik.service=api@internal
+            - homepage.group=Management
+            - homepage.name=Traefik
+            - homepage.icon=traefik.png
+            - homepage.href=${TRAEFIK_URL}
+            - homepage.description=Reverse proxy
+    # ~/secrets/compose/dockge.yaml
     dockge:
         image: louislam/dockge:1
         container_name: dockge
@@ -22,7 +59,13 @@ services:
             - DOCKGE_STACKS_DIR=${VOLUMES_DIR}/dockge
         depends_on:
             - portainer
+        networks:
+            - proxy
         labels:
+            - traefik.enable=true
+            - traefik.http.routers.dockge.rule=Host(`dockge.${LAB_HOSTNAME}`)
+            - traefik.http.routers.dockge.entrypoints=web
+            - traefik.http.services.dockge.loadbalancer.server.port=5001
             - homepage.group=Management
             - homepage.name=Dockge
             - homepage.icon=dockge.png
@@ -42,7 +85,13 @@ services:
             - type: volume
               source: portainer_data
               target: /data
+        networks:
+            - proxy
         labels:
+            - traefik.enable=true
+            - traefik.http.routers.portainer.rule=Host(`portainer.${LAB_HOSTNAME}`)
+            - traefik.http.routers.portainer.entrypoints=web
+            - traefik.http.services.portainer.loadbalancer.server.port=9000
             - homepage.group=Management
             - homepage.name=Portainer
             - homepage.icon=portainer.png
@@ -82,7 +131,13 @@ services:
         depends_on:
             homer-config:
                 condition: service_completed_successfully
+        networks:
+            - proxy
         labels:
+            - traefik.enable=true
+            - traefik.http.routers.homer.rule=Host(`homer.${LAB_HOSTNAME}`)
+            - traefik.http.routers.homer.entrypoints=web
+            - traefik.http.services.homer.loadbalancer.server.port=8080
             - homepage.group=Dashboards
             - homepage.name=Homer
             - homepage.icon=homer.png
@@ -106,11 +161,17 @@ services:
               target: /var/run/docker.sock
               read_only: true
         environment:
-            - HOMEPAGE_ALLOWED_HOSTS=localhost:${HOMEPAGE_PORT},127.0.0.1:${HOMEPAGE_PORT}
+            - HOMEPAGE_ALLOWED_HOSTS=localhost:${HOMEPAGE_PORT},127.0.0.1:${HOMEPAGE_PORT},homepage.${LAB_HOSTNAME}
             - PUID=1000
             # Run with the socket's group so Homepage can read it for label discovery
             - PGID=${DOCKER_GID:?set DOCKER_GID in .env}
+        networks:
+            - proxy
         labels:
+            - traefik.enable=true
+            - traefik.http.routers.homepage.rule=Host(`homepage.${LAB_HOSTNAME}`)
+            - traefik.http.routers.homepage.entrypoints=web
+            - traefik.http.services.homepage.loadbalancer.server.port=3000
             - homepage.group=Dashboards
             - homepage.name=Homepage
             - homepage.icon=homepage.png
@@ -142,3 +203,19 @@ volumes:
             type: none
             o: bind
             device: ${VOLUMES_DIR}/homepage
+    traefik:
+        driver: local
+        driver_opts:
+            type: none
+            o: bind
+            device: ${VOLUMES_DIR}/traefik
+
+configs:
+    traefik_static:
+        file: ${VOLUMES_DIR}/traefik/traefik.yml
+
+networks:
+    # Shared with Traefik; fixed name so stacks outside this project (e.g. Dockge's) can join it as external
+    proxy:
+        name: proxy
+        driver: bridge
