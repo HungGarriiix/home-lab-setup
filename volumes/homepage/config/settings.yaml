@@ -2,6 +2,15 @@
 # For configuration options and examples, please see:
 # https://gethomepage.dev/configs/settings/
 
+title: My Awesome Homepage
+description: A description of my awesome homepage
+background: 
+  image: /images/background.jpg
+  blur: sm # sm, "", md, xl... see https://tailwindcss.com/docs/backdrop-blur
+  saturate: 100 # 0, 50, 100... see https://tailwindcss.com/docs/backdrop-saturate
+  brightness: 80 # 0, 50, 75... see https://tailwindcss.com/docs/backdrop-brightness
+  opacity: 50 # 0-100
+
 providers:
   openweathermap: openweathermapapikey
   weatherapi: weatherapiapikey
@@ -10,5 +19,6 @@ headerStyle: boxedWidgets
 
 layout:
   Welcome:
+    # row: own line; columns: 1 keeps its services in one column. Full screen width comes from #welcome in custom.css
     style: row
     columns: 1

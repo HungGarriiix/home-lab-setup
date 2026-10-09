@@ -1,1 +1,21 @@
-#welcome .service-name { font-size: 1.5rem; font-weight: 600; }
+/* Welcome group: #welcome is added by custom.js (Homepage gives groups no id) */
+#welcome {
+  /* Break out of the centred page container to span the whole viewport width */
+  flex-basis: 100vw;
+  width: 100vw;
+  max-width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+#welcome .service-name {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* 100vw includes the vertical scrollbar; avoid a sideways scroll */
+body {
+  overflow-x: hidden;
+}

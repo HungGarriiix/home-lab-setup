@@ -31,7 +31,7 @@ services:
             - traefik.http.routers.traefik.rule=Host(`traefik.${LAB_HOSTNAME:?set LAB_HOSTNAME in .env}`)
             - traefik.http.routers.traefik.entrypoints=web
             - traefik.http.routers.traefik.service=api@internal
-            - homepage.group=Management
+            - homepage.group=Network
             - homepage.name=Traefik
             - homepage.icon=traefik.png
             - homepage.href=${TRAEFIK_URL}
@@ -155,6 +155,11 @@ services:
               target: /app/config
               volume:
                   subpath: config
+            - type: volume
+              source: homepage
+              target: /app/public/images
+              volume:
+                  subpath: images
             # Read-only socket for Homepage's Docker integration
             - type: bind
               source: /var/run/docker.sock
